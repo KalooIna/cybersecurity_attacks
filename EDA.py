@@ -225,5 +225,79 @@ def atomization_DeviceInformation( info ) : # need to take process splitting for
 info = df.loc[ random.randint( 0 , df.shape[ 0 ]) , "Device Information" ]
 print( atomization_DeviceInformation( info ))
 
+# Network Segment
+
+col_name = "Network Segment"
+print( df[ col_name ].value_counts())
+piechart_col( col_name )
+# --> 2 bully variables { "Network segA" = 1 for segment A = True , 0 otherwise ; "Network segB" = 1 for segment B = Tru , 0 otherwise }
+
+# Geo-location Data
+
+col_name = "Geo-location Data"
+print( df[ col_name ].value_counts())
+df.insert( 25 , "Geo-location City" , value = pd.NA )
+df.insert( 26 , "Geo-location State" , value = pd.NA )
+def geolocation_data( info ) :
+    city , state = info.split( ", " )
+    return pd.Series([ city , state ])
+df[[ "Geo-location City" , "Geo-location State" ]] = df[ "Geo-location" ].apply( lambda x : geolocation_data( x ))
+
+# Proxy Information
+## * NAs = no proxy or what ?????
+col_name = "Proxy Information"
+print( df[ col_name ].value_counts())
+df.insert( 26 , "Proxy latitude" , value = pd.NA )
+df.insert( 27 , "Proxy longitude" , value = pd.NA )
+df.insert( 28 , "Proxy country" , value = pd.NA )
+df.insert( 29 , "Proxy city" , value = pd.NA )
+df[[ "Proxy latitude" , "Proxy longitude" , "Proxy country" , "Proxy city" ]] = df[ "Source IP Address" ].apply( lambda x : ip_to_coords( x ))
+
+# Firewall Logs
+
+col_name = "Firewall Logs"
+print( df[ col_name ].value_counts())
+"""
+    Loga Data = 1
+    pd.NA = 0
+"""
+bully = df[ col_name ] == "Log Data"
+df.loc[ bully , col_name ] = 1
+df.loc[ ~ bully , col_name ] = 0
+piechart_col( col_name , [ "Log Data" , "No Log Data" ])
+
+# IDS/IPS Alerts
+
+col_name = "IDS/IPS Alerts"
+print( df[ col_name ].value_counts())
+"""
+    Alert Data = 1
+    pd.NA = 0
+"""
+bully = df[ col_name ] == "Alert Data"
+df.loc[ bully , col_name ] = 1
+df.loc[ ~ bully , col_name ] = 0
+piechart_col( col_name , [ "Alert Data" , "No Alert Data" ])
+
+# Log Source
+
+col_name = "Log Source"
+print( df[ col_name ].value_counts())
+"""
+    Firewall = 1
+    Server = 0
+"""
+bully = df[ col_name ] == "Firewall"
+df.loc[ bully , col_name ] = 1
+df.loc[ ~ bully , col_name ] = 0
+piechart_col( col_name , [ "Firewall" , "Server" ])
+
+
+
+
+
+
+
+
 
 
