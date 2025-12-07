@@ -1,4 +1,4 @@
-from src.EDA1 import EDA
+from src.EDA_uge import EDA
 
 # Initialize eda class
 eda = EDA()
