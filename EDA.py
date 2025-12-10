@@ -53,6 +53,11 @@ df = df.rename( columns = {
 df = df.drop( "User Information" , axis = 1 )
 print( df.describe())
 
+crosstabs = {}
+def crosstab_col( col ,target , name_col , name_target ) :
+    name_tab = f"{ name_col }_x_{ name_target }"
+    crosstabs[ name_tab ] = pd.crosstab( df[ target ] , df[ col ] , normalize = True ) * 100
+
 # NAs
 
 df_s0 = df.shape[ 0 ]
@@ -174,7 +179,7 @@ df.loc[ bully , col_name ] = 1
 df.loc[ ~ bully , col_name ] = 0
 print( df[ col_name ].value_counts())
 # piechart_col( col_name )
-sourceportxattacktype_crosstab = pd.crosstab( df[ "Attack Type" ] , df[ "Source Port ephemeral" ] , normalize = True ) * 100
+crosstab_col( col_name , "Attack Type" , "sourceport" , "attacktype" )
 
 # Destination Port
 col_name = "Destination Port ephemeral"
@@ -188,7 +193,7 @@ df.loc[ bully , col_name ] = 1
 df.loc[ ~ bully , col_name ] = 0
 print( df[ col_name ].value_counts())
 # piechart_col( col_name )
-destportxattacktype_crosstab = pd.crosstab( df[ "Attack Type" ] , df[ "Destination Port ephemeral" ] , normalize = True ) * 100
+crosstab_col( col_name , "Attack Type" , "destport" , "attacktype" )
 
 # protocol
 
@@ -196,7 +201,7 @@ col_name = "Protocol"
 print( df[ col_name ].value_counts())
 piechart_col( col_name )
 ### cross table Protocol x Attack Type
-protocolxattacktype_crosstab = pd.crosstab( df[ "Attack Type" ] , df[ "Protocol" ] , normalize = True ) * 100
+crosstab_col( col_name , "Attack Type" , col_name , "attacktype" )
 
 # packet length
 
@@ -316,13 +321,13 @@ df[[ "Proxy latitude" , "Proxy longitude" , "Proxy country" , "Proxy city" ]] = 
 col_name = "Firewall Logs"
 print( df[ col_name ].value_counts())
 """
-    Loga Data = 1
+    Log Data = 1
     pd.NA = 0
 """
 bully = df[ col_name ] == "Log Data"
 df.loc[ bully , col_name ] = 1
 df.loc[ ~ bully , col_name ] = 0
-piechart_col( col_name , [ "Log Data" , "No Log Data" ])
+# piechart_col( col_name , [ "Log Data" , "No Log Data" ])
 
 # IDS/IPS Alerts
 
@@ -335,7 +340,7 @@ print( df[ col_name ].value_counts())
 bully = df[ col_name ] == "Alert Data"
 df.loc[ bully , col_name ] = 1
 df.loc[ ~ bully , col_name ] = 0
-piechart_col( col_name , [ "Alert Data" , "No Alert Data" ])
+# piechart_col( col_name , [ "Alert Data" , "No Alert Data" ])
 
 # Log Source
 
@@ -348,9 +353,8 @@ print( df[ col_name ].value_counts())
 bully = df[ col_name ] == "Firewall"
 df.loc[ bully , col_name ] = 1
 df.loc[ ~ bully , col_name ] = 0
-piechart_col( col_name , [ "Firewall" , "Server" ])
-
-
+# piechart_col( col_name , [ "Firewall" , "Server" ])
+crosstab_col( col_name , "Firewall Logs" , "logsource" , "firewallogs" )
 
 
 
