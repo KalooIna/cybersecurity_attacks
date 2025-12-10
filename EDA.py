@@ -1,33 +1,40 @@
-import numpy as np
+#%% library init
+
 import pandas as pd
-import geoip2.database
 import plotly.io
-plotly.io.renderers.default = "browser"
+import os
+os.environ[ "GDAL_LIBRARY_PATH" ] = "C:/Users/KalooIna/anaconda3/envs/cybersecurity_attacks/Library/bin/gdal311.dll" # make sure this is the name of your gdal.dll file ( rename it to appropriate version if necessary )
+import geoip2.database
+plotly.io.renderers.default = "browser" # plotly settings for browser settings
 import plotly.express as px
 import plotly.graph_objects as go
-import requests
+from plotly.subplots import make_subplots as subp
 import random
 import django
 from django.conf import settings
+# django settings for geoIP2
 settings.configure(
-    GEOIP_PATH = "/Users/kalooina/Documents/Paperwork/scolar/DSTI/2025:2026/Machine Learning/cybersecurity_attacks ( project1 )/geolite2_db" ,
+    GEOIP_PATH = "geolite2_db" ,
     INSTALLED_APPS = [ "django.contrib.gis" ]
     )
 django.setup()
 from django.contrib.gis.geoip2 import GeoIP2
 geoIP = GeoIP2()
 
+# useful links
 maxmind_geoip2_db_url = "https://www.maxmind.com/en/accounts/1263991/geoip/downloads"
 geoip2_doc_url = "https://geoip2.readthedocs.io/en/latest/"
 geoip2_django_doc_url = "https://docs.djangoproject.com/en/5.2/ref/contrib/gis/geoip2/"
 
-df = pd.read_csv("/Users/kalooina/Documents/Paperwork/scolar/DSTI/2025:2026/Machine Learning/cybersecurity_attacks ( project1 )/cybersecurity_attacks.csv" )
+# loadding dataset
+df = pd.read_csv("cybersecurity_attacks.csv" )
 
+# pieichart generator for a column
 def piechart_col( col , names = None ) :
     if names is None :
         fig = px.pie( df[ col ].value_counts() ,
                      values = col ,
-                     names = df[ col ].value_counts().index )
+                     names = df[ col ].unique() )
         fig.show()
     else : 
         fig = px.pie( df[ col ].value_counts() ,
@@ -37,9 +44,12 @@ def piechart_col( col , names = None ) :
         
 #%% EDA
         
-df = df.rename( columns = { "Timestamp" : "date" ,
-                           "Alerts/Warnings" : "Alert Trigger" ,
-                           })
+df = df.rename( columns = { 
+    "Timestamp" : "date" ,
+    "Source Port" : "Source Port ephemeral" ,
+    "Destination Port" : "Destination Port ephemeral" ,
+    "Alerts/Warnings" : "Alert Trigger" ,
+    })
 df = df.drop( "User Information" , axis = 1 )
 print( df.describe())
 
@@ -51,9 +61,16 @@ for col in df.columns :
     if NA_n > 0 :
         print( f"number of NAs in { col } = { NA_n } / { df_s0 } = { NA_n / df_s0 } " )
 
+# Attack Type !!!! TARGET VARIABLE !!!!
+
+col_name = "Attack Type"
+print( df[ col_name ].value_counts())
+piechart_col( col_name )
+
 # date
 
 col_name = "date"
+df[ col_name ] = pd.to_datetime( df[ col_name ])
 date_end = max( df[ col_name ])
 date_start = min( df[ col_name ])
 print( f"dates go from { date_start } and { date_end }" )
@@ -76,63 +93,110 @@ def ip_to_coords( ip_address ) :
     except :
         ret = pd.concat([ ret , pd.Series([ pd.NA , pd.NA ])] , ignore_index = True )
     return ret
-df.insert( 2 , "IP latitude" , value = pd.NA )
-df.insert( 3 , "IP longitude" , value = pd.NA )
-df.insert( 4 , "IP country" , value = pd.NA )
-df.insert( 5 , "IP city" , value = pd.NA )
-df[[ "IP latitude" , "IP longitude" , "IP country" , "IP city" ]] = df[ "Source IP Address" ].apply( lambda x : ip_to_coords( x ))
+i = 2
+for destsource in [ "Source" , "Destination" ] :
+    df.insert( i , f"{ destsource } IP latitude" , value = pd.NA )
+    df.insert( i + 1 , f"{ destsource } IP longitude" , value = pd.NA )
+    df.insert( i + 2 , f"{ destsource } IP country" , value = pd.NA )
+    df.insert( i + 3 , f"{ destsource } IP city" , value = pd.NA )
+    df[[ f"{ destsource } IP latitude" , f"{ destsource } IP longitude" , f"{ destsource } IP country" , f"{ destsource } IP city" ]] = df[ f"{ destsource } IP Address" ].apply( lambda x : ip_to_coords( x ))
+    i = i + 5
 
 #%% graph 3
 
-fig = go.Figure( go.Scattergeo(
-    lat = df[ "IP latitude" ] ,
-    lon = df[ "IP longitude" ] ,
-    color = df[ "Anomaly Scores" ]
-    ))
-fig.update_geos( projection_type = "orthographic" )
-fig.update_layout( 
-    title = "Source IP Address locations" ,
-    geo_scope = "world" ,
+fig = subp(
+    rows = 1 ,
+    cols = 2 ,
+    specs = [[
+        { "type" : "scattergeo" } , 
+        {"type": "scattergeo" } ,
+        ]] ,
+    subplot_titles = (
+        "Source IP locations" ,
+        "Destination IP locations" 
+        )
+    )
+fig.add_trace(
+    go.Scattergeo(
+        lat = df[ "Source IP latitude" ] ,
+        lon = df[ "Source IP longitude" ] ,
+        mode = "markers" ,
+        marker = { 
+            "size" : 5 ,
+            "color" : "blue"
+            }
+        ) ,
+    row = 1 , 
+    col = 1
+    )
+fig.add_trace(
+    go.Scattergeo(
+        lat = df[ "Destination IP latitude" ] ,
+        lon = df[ "Destination IP longitude" ] ,
+        mode = "markers" ,
+        marker = { 
+            "size" : 5 ,
+            "color" : "blue"
+            }
+        ) ,
+    row = 1 , 
+    col = 2
+    )
+fig.update_geos(
+    projection_type = "orthographic" ,
+    showcountries = True ,
+    showland = True ,
+    # landcolor = "LightGreen"
+)
+fig.update_layout(
     height = 750 ,
-    margin = { "r" : 0 ,"t" : 0,"l" : 0 ,"b" : 0 })
+    margin = { 
+        "r" : 0 , 
+        "t" : 80 , 
+        "l" : 0 , 
+        "b" : 0 
+        } ,
+    title_text = "IP Address Locations" ,
+    title_x = 0.5
+)
 fig.show()
 
-#%%
+#%% Source Port
 
-df_graph2 = (
-    df[ "IP country" ]
-    .value_counts()
-    .reset_index()
-)
+col_name = "Source Port ephemeral"
+## create boolean value for ephemeral and assigned ports
+"""
+    ephemeral port > 49151 = 1 
+    assigned/registered port <= 49151 = 0
+"""
+bully = df[ col_name ] > 49151
+df.loc[ bully , col_name ] = 1
+df.loc[ ~ bully , col_name ] = 0
+print( df[ col_name ].value_counts())
+# piechart_col( col_name )
+sourceportxattacktype_crosstab = pd.crosstab( df[ "Attack Type" ] , df[ "Source Port ephemeral" ] , normalize = True ) * 100
 
-df_graph2.columns = [ "country" , "count" ]
+# Destination Port
+col_name = "Destination Port ephemeral"
+## create boolean value for ephemeral and assigned ports
+"""
+    ephemeral port > 49151 = 1 
+    assigned/registered port <= 49151 = 0
+"""
+bully = df[ col_name ] > 49151
+df.loc[ bully , col_name ] = 1
+df.loc[ ~ bully , col_name ] = 0
+print( df[ col_name ].value_counts())
+# piechart_col( col_name )
+destportxattacktype_crosstab = pd.crosstab( df[ "Attack Type" ] , df[ "Destination Port ephemeral" ] , normalize = True ) * 100
 
-# Get full list of Plotly countries
-all_countries = px.data.gapminder()[ "country" ].unique()
-
-# Reindex to include all countries, fill missing ones with 0
-df_graph2 = df_graph2.set_index( "country" ).reindex( all_countries , fill_value = 0 ).reset_index()
-df_graph2.columns = [ "country" , "count" ]
-
-# Create choropleth
-fig = px.choropleth(
-    df_graph2 ,
-    locations = "country" ,
-    locationmode = "country names" ,
-    color = "count" ,
-    color_continuous_scale = "inferno" ,
-    projection = "orthographic" ,
-    title = "Global Population by Country" ,
-)
-
-fig.show()
-
-
-#%% protocol
+# protocol
 
 col_name = "Protocol"
 print( df[ col_name ].value_counts())
 piechart_col( col_name )
+### cross table Protocol x Attack Type
+protocolxattacktype_crosstab = pd.crosstab( df[ "Attack Type" ] , df[ "Protocol" ] , normalize = True ) * 100
 
 # packet length
 
@@ -167,12 +231,6 @@ print( df[ col_name ].value_counts())
 df[ col_name ] = df[ col_name ].fillna( 0 )
 df.loc[ df[ col_name ] == "Alert Triggered" , col_name ] = 1
 piechart_col( col_name , names = [ "Alert triggered" , "Alert not triggered" ] )
-
-# Attack Type !!!! TARGET VARIABLE !!!!
-
-col_name = "Attack Type"
-print( df[ col_name ].value_counts())
-piechart_col( col_name )
 
 # Attack Signature
 
