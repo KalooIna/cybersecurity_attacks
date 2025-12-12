@@ -1,0 +1,11 @@
+[workspace]
+authors = ["MH6706-a <MH6706-a@engie.com>"]
+channels = ["conda-forge"]
+name = "Project 1"
+platforms = ["win-64"]
+version = "0.1.0"
+
+[tasks]
+
+[dependencies]
+jupyterlab = ">=4.5.0,<5"
