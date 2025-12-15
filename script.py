@@ -29,7 +29,7 @@ geoip2_django_doc_url = "https://docs.djangoproject.com/en/5.2/ref/contrib/gis/g
 # loadding dataset
 df = pd.read_csv("data/cybersecurity_attacks.csv" )
 
-# transform variable to binary variables [ 0 , 1 ]
+# transform categorical variable to binary variables [ 0 , 1 ]
 def catvar_mapping( col_name , values , name = None) : 
     if name is None :
         name = values
@@ -67,7 +67,8 @@ def piechart_col( col , names = None ) :
         fig.show()
         
 #%% EDA
-        
+
+# renaming of columns
 df = df.rename( columns = { 
     "Timestamp" : "date" ,
     "Source Port" : "Source Port ephemeral" ,
@@ -77,6 +78,7 @@ df = df.rename( columns = {
 df = df.drop( "User Information" , axis = 1 )
 print( df.describe())
 
+# generation of crosstables for cat variables
 crosstabs = {}
 def crosstab_col( col ,target , name_col , name_target ) :
     name_tab = f"{ name_col }_x_{ name_target }"
