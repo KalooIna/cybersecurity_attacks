@@ -68,11 +68,19 @@ def piechart_col( col , names = None ) :
         
 #%% EDA
         
-df = df.rename( columns = { "Timestamp" : "date" ,
-                           "Alerts/Warnings" : "Alert Trigger" ,
-                           })
+df = df.rename( columns = { 
+    "Timestamp" : "date" ,
+    "Source Port" : "Source Port ephemeral" ,
+    "Destination Port" : "Destination Port ephemeral" ,
+    "Alerts/Warnings" : "Alert Trigger" ,
+    })
 df = df.drop( "User Information" , axis = 1 )
 print( df.describe())
+
+crosstabs = {}
+def crosstab_col( col ,target , name_col , name_target ) :
+    name_tab = f"{ name_col }_x_{ name_target }"
+    crosstabs[ name_tab ] = pd.crosstab( df[ target ] , df[ col ] , normalize = True ) * 100
 
 # NAs
 
@@ -82,9 +90,16 @@ for col in df.columns :
     if NA_n > 0 :
         print( f"number of NAs in { col } = { NA_n } / { df_s0 } = { NA_n / df_s0 } " )
 
+# Attack Type !!!! TARGET VARIABLE !!!!
+
+col_name = "Attack Type"
+print( df[ col_name ].value_counts())
+piechart_col( col_name )
+
 # date
 
 col_name = "date"
+df[ col_name ] = pd.to_datetime( df[ col_name ])
 date_end = max( df[ col_name ])
 date_start = min( df[ col_name ])
 print( f"dates go from { date_start } and { date_end }" )
