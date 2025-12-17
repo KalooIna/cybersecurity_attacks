@@ -467,24 +467,154 @@ crosstab_col( "Log Source Firewall" , "Firewall Logs" , "logsource" , "firewallo
 
 #%% general crosstable
 
-crosstabs[ "general" ] = pd.crosstab( 
-    index = [ 
-        df[ "Source Port ephemeral" ] , 
-        df[ "Destination Port ephemeral"] ,
-        df[ "Protocol" ] ,
-        df[ "Packet Type Control" ] ,
-        df[ "Traffic Type" ] ,
-        df[ "Malware Indicators" ] ,
-        df[ "Alert Trigger" ] ,
-        df[ "Attack Signature patA" ] ,
-        df[ "Action Taken" ] ,
-        df[ "Severity Level" ] ,
-        df[ "Network Segment" ] ,
-        df[ "Firewall Logs" ] ,
-        df[ "IDS/IPS Alerts" ] ,
-        df[ "Log Source Firewall" ]
-    ] , 
-    columns = df[ "Attack Type" ])
+def sankey_diag( cols_bully = [
+        True , # "Source IP country"
+        True , # "Destination IP country"
+        True , # "Source Port ephemeral"
+        True , # "Destination Port ephemeral"
+        True , # "Protocol"
+        True , # "Packet Type Control"
+        True , # "Traffic Type"
+        True , # "Malware Indicators"
+        True , # "Alert Trigger"
+        True , # "Attack Signature patA"
+        True , # "Action Taken"
+        True , # "Severity Level"
+        True , # "Network Segment"
+        True , # "Firewall Logs"
+        True , # "IDS/IPS Alerts"
+        True , # "Log Source Firewall"
+        ] , ntop = 10 ) :
+    cols = np.array([
+        "Source IP country" ,
+        "Destination IP country" ,
+        "Source Port ephemeral" ,
+        "Destination Port ephemeral" ,
+        "Protocol" , 
+        "Packet Type Control" ,
+        "Traffic Type" ,
+        "Malware Indicators" ,
+        "Alert Trigger" ,
+        "Attack Signature patA" ,
+        "Action Taken" ,
+        "Severity Level" ,
+        "Network Segment" ,
+        "Firewall Logs" ,
+        "IDS/IPS Alerts" ,
+        "Log Source Firewall"
+        ])
+    cols = cols[ np.array( cols_bully )]
+    
+    idx_ct =  []
+    labels = []
+    if "Source IP country" in cols :
+        SIP = df[ "Source IP country" ].copy( deep = True )
+        SIP.name = "SIP"
+        SIPlabs = pd.Series( SIP.value_counts().index[ : ntop ])
+        bully = ( SIP.isin( SIPlabs ) | SIP.isna())
+        SIP.loc[ ~ bully ] = "other"
+        SIPlabs = "SIP " + pd.concat([ SIPlabs , pd.Series([ "other" ])])
+        labels.extend( SIPlabs.to_list())
+        idx_ct = idx_ct + [ SIP ]
+        cols = cols[ cols != "Source IP country" ]
+    if "Destination IP country" in cols :
+        DIP = df[ "Destination IP country" ].copy( deep = True )
+        DIP.name = "DIP"
+        DIPlabs = pd.Series( DIP.value_counts().index[ : ntop ])
+        bully = ( DIP.isin( DIPlabs ) | DIP.isna())
+        DIP.loc[ ~ bully ] = "other"
+        DIPlabs = "DIP " + pd.concat([ DIPlabs , pd.Series([ "other" ])])
+        labels.extend( DIPlabs.to_list())
+        idx_ct = idx_ct + [ DIP ]
+        cols = cols[ cols != "Destination IP country" ]
+        
+    # build cross table with Attack Type in columns and multi-index of variables in index
+    idx_ct = idx_ct + [ df[ col ] for col in cols ]
+    print( idx_ct )
+    crosstabs = pd.crosstab( 
+        index = idx_ct ,
+        columns = df[ "Attack Type" ]
+        )
+    
+    # compute labels
+    for c in np.append( cols , "Attack Type" ) :
+        vals = df[ c ].unique()
+        for v in vals :
+            labels.append( f"{ c } { v }" )
+    # computation of source , target , value
+    source = []
+    target = []
+    value = []
+    nlvl = crosstabs.index.nlevels
+    for idx , row in crosstabs.iterrows()  :
+        row_labs = []
+        if ( nlvl == 1 ) :
+            row_labs.append( f"{ crosstabs.index.name } { idx }" )
+        else :
+            for i , val in enumerate( idx ) :
+                row_labs.append( f"{ crosstabs.index.names[ i ] } { val }" )
+        for attype in crosstabs.columns :
+            val = row[ attype ]
+            for i in range( 0 , nlvl - 1 ) :
+                source.append( labels.index( row_labs[ i ]))
+                target.append( labels.index( row_labs[ i + 1 ]))
+                value.append( val )
+            source.append( labels.index( row_labs[ - 1 ]))
+            target.append( labels.index( f"Attack Type { attype }" ))
+            value.append( val )
+    
+    # plot the sankey diagram
+    n = len( labels )
+    colors = px.colors.sample_colorscale(
+        px.colors.sequential.Inferno ,
+        [ i / ( n - 1 ) for i in range( n )]
+        ) 
+    fig = go.Figure( data = [ go.Sankey(
+        node = dict(
+          pad = 15 ,
+          thickness = 20 ,
+          line = dict( 
+              color = "rgba( 0 , 0 , 0 , 0.1 )" ,
+              width = 0.5 
+              ) ,
+          label = labels ,
+          color = colors ,
+          ) ,
+        link = dict(
+          source = source ,
+          target = target ,
+          value = value 
+          ))])
+    fig.update_layout(
+        title_text = "Sankey Diagram" ,
+        # font_family = "Courier New" ,
+        # font_color = "blue" , 
+        font_size = 20 ,
+        title_font_family = "Avenir" ,
+        title_font_color = "black",
+        )
+    fig.show()
+    
+    return crosstabs
+
+crosstabs = sankey_diag([
+    False , # "Source IP country"
+    False , # "Destination IP country"
+    False , # "Source Port ephemeral"
+    False , # "Destination Port ephemeral"
+    False , # "Protocol"
+    False , # "Packet Type Control"
+    False , # "Traffic Type"
+    False , # "Malware Indicators"
+    False , # "Alert Trigger"
+    False , # "Attack Signature patA"
+    False , # "Action Taken"
+    False , # "Severity Level"
+    False , # "Network Segment"
+    False , # "Firewall Logs"
+    False , # "IDS/IPS Alerts"
+    False , # "Log Source Firewall"
+    ])
 
 
 #%% SARIMA analysis on Attack type
