@@ -1,6 +1,7 @@
 #%% library init
 
 import pandas as pd
+import prince
 import plotly.io
 import os
 import numpy as np
@@ -10,6 +11,7 @@ plotly.io.renderers.default = "browser" # plotly settings for browser settings
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots as subp
+from sklearn.metrics import matthews_corrcoef
 import random
 import django
 from django.conf import settings
@@ -128,7 +130,7 @@ fig = px.histogram( df , col_name )
 fig.show()
 
 
-# IP address
+#%% IP address
 i = 2
 for destsource in [ "Source" , "Destination" ] :
     col = df.columns.get_loc( f"{ destsource } IP Address" ) + 1
@@ -142,10 +144,10 @@ for destsource in [ "Source" , "Destination" ] :
 fig = subp(
     rows = 1 ,
     cols = 2 ,
-    specs = [
+    specs = [[
         { "type" : "scattergeo" } , 
         { "type" : "scattergeo" } ,
-        ] ,
+        ]] ,
     subplot_titles = (
         "Source IP locations" ,
         "Destination IP locations" 
@@ -281,7 +283,7 @@ def sankey_diag_IPs( ntop ) :
     return aggregIPs
 aggregIPs = sankey_diag_IPs( 10 )
 
-# Source Port
+#%% Source Port
 col_name = "Source Port ephemeral"
 ## create boolean value for ephemeral and assigned ports
 """
@@ -617,6 +619,102 @@ crosstabs = sankey_diag([
     ])
 
 
+#%% coefficients computation
+
+# matthews corrcoef
+
+def catvar_corr( col , target = "Attack Type") :
+    corr = matthews_corrcoef( df[ target ], df[ col ].astype( str ))
+    print( f"phi corr between { target } and { col } = { corr }" )
+catvars = np.array([
+    "Source IP country" ,
+    "Destination IP country" ,
+    "Source Port ephemeral" ,
+    "Destination Port ephemeral" ,
+    "Protocol" , 
+    "Packet Type Control" ,
+    "Traffic Type" ,
+    "Malware Indicators" ,
+    "Alert Trigger" ,
+    "Attack Signature patA" ,
+    "Action Taken" ,
+    "Severity Level" ,
+    "Network Segment" ,
+    "Firewall Logs" ,
+    "IDS/IPS Alerts" ,
+    "Log Source Firewall"
+    ])
+for c in catvars :
+    catvar_corr( c )
+
+#%% chi 2
+
+from scipy.stats import chi2_contingency
+# obs = np.array([[10, 10, 20], [20, 20, 20]])
+df_catvar = df[[
+    "Attack Type",
+    "Source Port ephemeral" ,
+    "Destination Port ephemeral" ,
+    "Protocol" , 
+    "Packet Type Control" ,
+    "Traffic Type" ,
+    "Malware Indicators" ,
+    "Alert Trigger" ,
+    "Attack Signature patA" ,
+    "Action Taken" ,
+    "Severity Level" ,
+    "Network Segment" ,
+    "Firewall Logs" ,
+    "IDS/IPS Alerts" ,
+    "Log Source Firewall"
+    ]]
+res = chi2_contingency( df_catvar.values.T[ 1 : ].astype( str ))
+print( res.statistic )
+print( res.pvalue )
+print( res.dof )
+print( res.expected_freq )
+
+#%% mca
+
+mca = prince.MCA(
+    n_components=3,
+    n_iter=3,
+    copy=True,
+    check_input=True,
+    engine='sklearn',
+    random_state=42
+)
+
+df_catvar = df[[
+    "Attack Type",
+    "Source Port ephemeral" ,
+    "Destination Port ephemeral" ,
+    "Protocol" , 
+    "Packet Type Control" ,
+    "Traffic Type" ,
+    "Malware Indicators" ,
+    "Alert Trigger" ,
+    "Attack Signature patA" ,
+    "Action Taken" ,
+    "Severity Level" ,
+    "Network Segment" ,
+    "Firewall Logs" ,
+    "IDS/IPS Alerts" ,
+    "Log Source Firewall"
+    ]]
+mca = mca.fit(df_catvar)
+
+one_hot = pd.get_dummies(df_catvar)
+
+mca_no_one_hot = prince.MCA(one_hot=False)
+mca_no_one_hot = mca_no_one_hot.fit(one_hot)
+mca_without_correction = prince.MCA(correction=None)
+
+mca_with_benzecri_correction = prince.MCA(correction='benzecri')
+mca_with_greenacre_correction = prince.MCA(correction='greenacre')
+
+mca.eigenvalues_summary
+
 #%% SARIMA analysis on Attack type
 
 Attacks_pday = df.copy( deep = True )
@@ -702,3 +800,24 @@ for i , attacktype in enumerate([ "Malware" , "Intrustion" , "DDoS" ]) :
         col = 2 ,
         )
 fig.show()
+
+#%%
+
+df.to_csv( "df" , sep = "|" )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
