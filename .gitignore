@@ -49,3 +49,9 @@ Thumbs.db
 # Streamlit
 .streamlit/
 
+# pixi environments
+.pixi/*
+!.pixi/config.toml
+
+# .env
+.env
