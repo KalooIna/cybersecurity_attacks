@@ -1,0 +1,30 @@
+,Columns,isna,num,ip address,non atomic,,Team1,Team2,Team3
+1,Timestamp,,,,,,v,,
+2,Source IP Address,,,TRUE,,,v,,
+3,Destination IP Address,,,TRUE,,,,v,
+4,Source Port,,TRUE,,,,v,,
+5,Destination Port,,TRUE,,,,,v,
+6,Protocol,,,,,,v,,
+7,Packet Length,,TRUE,,,,,,v
+8,Packet Type,,,,,,,v,
+9,Traffic Type,,,,,,,,v
+10,Payload Data,,,,,,,v,
+11,Malware Indicators,TRUE,,,,,v,,
+12,Anomaly Scores,,TRUE,,,,,,v
+13,Alerts/Warnings,TRUE,,,,,,v,
+14,Attack Type,,,,,,,,
+15,Attack Signature,,,,,,,,v
+16,Action Taken,,,,,,v,,
+17,Severity Level,,,,,,,v,
+18,User Information,,,,,,,,v
+19,Device Information,,,,TRUE,,,,v
+20,Network Segment,,,,,,,,v
+21,Geo-location Data,,,,TRUE,,,v,
+22,Proxy Information,TRUE,,TRUE,,,,,v
+23,Firewall Logs,TRUE,,,,,v,,
+24,IDS/IPS Alerts,TRUE,,,,,,v,
+25,Log Source,,,,,,v,,
+,,,,,,,,,
+,,,,,,,Kaloina,Elly,Sanchana
+,,,,,,,Siham,Eugenio,Otmane
+,,,,,,,,,Vasantha
