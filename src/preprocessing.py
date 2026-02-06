@@ -183,3 +183,6 @@ class DataPreprocessor:
         self.numerical_columns = data['numerical_columns']
 
 
+
+
+

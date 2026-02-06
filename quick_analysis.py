@@ -24,7 +24,7 @@ warnings.filterwarnings('ignore')
 # Import custom modules
 from data_loader import load_dataset, get_column_info
 from preprocessing import DataPreprocessor
-from model_trainer import ModelTrainer
+from model import ModelTrainer
 from utils import display_data_info, plot_confusion_matrix, plot_feature_importance
 
 # Create output directory

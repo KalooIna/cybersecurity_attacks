@@ -135,7 +135,3 @@ class ModelTrainer:
         """Load a model from disk."""
         return joblib.load(filepath)
 
-
-
-
-
