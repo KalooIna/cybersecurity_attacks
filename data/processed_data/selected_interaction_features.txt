@@ -1,0 +1,20 @@
+Anomaly Scores_Quartile_+_Packet Length_Quartile
+Anomaly Scores_Quartile_+_Severity Level
+Packet Length_Quartile_+_Severity Level
+Anomaly Scores_Quartile_x_Packet Length_Quartile
+Anomaly Scores_Quartile_+_Firewall Logs_1
+Anomaly Scores_Quartile_+_hours_div_6-20
+Anomaly Scores_Quartile_+_IDS/IPS Alerts_1
+Anomaly Scores_Quartile_+_Malware Indicators_1
+Anomaly Scores_Quartile_+_Log Source_Server
+Anomaly Scores_Quartile_+_Attack Signature_Known Pattern B
+Anomaly Scores_Quartile_x_Severity Level
+Anomaly Scores_Quartile_+_Alerts/Warnings_1
+Packet Length_Quartile_+_Malware Indicators_1
+Packet Length_Quartile_+_hours_div_6-20
+Packet Length_Quartile_+_Log Source_Server
+Packet Length_Quartile_+_Attack Signature_Known Pattern B
+Packet Length_Quartile_+_Firewall Logs_1
+Packet Length_Quartile_x_Severity Level
+Packet Length_Quartile_+_IDS/IPS Alerts_1
+Packet Length_Quartile_+_Alerts/Warnings_1

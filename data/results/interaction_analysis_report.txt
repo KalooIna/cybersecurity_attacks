@@ -1,0 +1,35 @@
+======================================================================
+FEATURE INTERACTION ANALYSIS REPORT
+======================================================================
+
+Baseline F1-Score: 0.3288
+Final F1-Score: 0.3295
+Improvement: +0.0007
+
+Original features: 50
+Selected interactions: 20
+Final feature count: 70
+
+Top Interaction Features:
+----------------------------------------------------------------------
+                                                   feature  importance
+          Anomaly Scores_Quartile_+_Packet Length_Quartile    0.011891
+                  Anomaly Scores_Quartile_+_Severity Level    0.011391
+                   Packet Length_Quartile_+_Severity Level    0.010620
+          Anomaly Scores_Quartile_x_Packet Length_Quartile    0.009334
+                 Anomaly Scores_Quartile_+_Firewall Logs_1    0.009011
+                  Anomaly Scores_Quartile_+_hours_div_6-20    0.008961
+                Anomaly Scores_Quartile_+_IDS/IPS Alerts_1    0.008875
+            Anomaly Scores_Quartile_+_Malware Indicators_1    0.008852
+               Anomaly Scores_Quartile_+_Log Source_Server    0.008819
+Anomaly Scores_Quartile_+_Attack Signature_Known Pattern B    0.008707
+                  Anomaly Scores_Quartile_x_Severity Level    0.008567
+               Anomaly Scores_Quartile_+_Alerts/Warnings_1    0.008508
+             Packet Length_Quartile_+_Malware Indicators_1    0.008138
+                   Packet Length_Quartile_+_hours_div_6-20    0.008081
+                Packet Length_Quartile_+_Log Source_Server    0.008046
+ Packet Length_Quartile_+_Attack Signature_Known Pattern B    0.007995
+                  Packet Length_Quartile_+_Firewall Logs_1    0.007984
+                   Packet Length_Quartile_x_Severity Level    0.007980
+                 Packet Length_Quartile_+_IDS/IPS Alerts_1    0.007835
+                Packet Length_Quartile_+_Alerts/Warnings_1    0.007820
