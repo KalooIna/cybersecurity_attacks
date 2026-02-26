@@ -10,6 +10,11 @@ from src.utilities.helpers import engineer_features_for_new_row, ports_engineer_
 import hashlib
 from pipeline import main as run_pipeline
 import sys
+from huggingface_hub import hf_hub_download
+import joblib
+import os
+
+
 
 
 # ============================================================
@@ -32,7 +37,19 @@ def load_model(model_type):
         run_pipeline()  # Run the pipeline to create the model if not found
         with open(f"models/{model_type}_model.pkl", "rb") as f:
             return pickle.load(f)
-
+        
+@st.cache_resource
+def load_models():
+    models = {}
+    model_files = ["extra_trees_model.pkl", "model_2.pkl", "model_3.pkl"]
+    
+    for f in model_files:
+        path = hf_hub_download(
+            repo_id="eugenio/cybersecurity-models",
+            filename=f
+        )
+        models[f] = joblib.load(path)
+    return models
 
 @st.cache_data
 def load_dataset():
