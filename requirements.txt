@@ -32,3 +32,4 @@ ua-parser==1.0.1
 user-agents==2.2.0
 validators==0.35.0
 yara-python==4.5.4
+psutil==5.9.5
