@@ -19,4 +19,4 @@ data/*
 .env
 
 #  Claude directory
-.claude/*
+.claude/*models/*.pkl
