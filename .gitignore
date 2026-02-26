@@ -5,9 +5,10 @@
 # Data and DB directories
 data/*
 !data/.gitkeep
-!data/cybersecurity_attacks.csv
+!data/cybersecurity_attacks.
+!data/df.parquet
 # Saved models
-models/*
+
 !models/.gitkeep
 
 # Cache directories
