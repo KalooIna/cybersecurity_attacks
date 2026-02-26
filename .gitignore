@@ -5,7 +5,7 @@
 # Data and DB directories
 data/*
 !data/.gitkeep
-!data/cybersecuryity_dataset.csv
+!data/cybersecurity_dataset.csv
 # Saved models
 models/*
 !models/.gitkeep
