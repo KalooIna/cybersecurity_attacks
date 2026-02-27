@@ -150,14 +150,14 @@ def model_metrics(attypes, model, x_train, x_test, y_train, y_test, y_pred, y_pr
         index=attypes,
         columns=attypes,
     )
-    fig = px.imshow(
+    fig_cm = px.imshow(
         confmat,
         text_auto=True,
         color_continuous_scale="Magma",
         title="Confusion Matrix",
     )
-    fig.update_layout(xaxis_title="Predicted Class", yaxis_title="True Class")
-    show_fig(fig)
+    fig_cm.update_layout(xaxis_title="Predicted Class", yaxis_title="True Class")
+    show_fig(fig_cm)
 
     # Metrics evaluation
     accscore = skl.metrics.accuracy_score(y_test, y_pred)
@@ -251,7 +251,7 @@ def model_metrics(attypes, model, x_train, x_test, y_train, y_test, y_pred, y_pr
         uniformtext_mode="hide",
     )
     show_fig(fig)
-    return accscore, fig_roc, fig
+    return accscore, fig_roc, fig_cm
 
 
 def modelling(
