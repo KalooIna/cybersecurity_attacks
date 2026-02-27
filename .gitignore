@@ -5,10 +5,9 @@
 # Data and DB directories
 data/*
 !data/.gitkeep
-!data/cybersecurity_attacks.
+!data/cybersecurity_attacks.csv
 !data/df.parquet
 # Saved models
-
 !models/.gitkeep
 
 # Cache directories
@@ -19,4 +18,4 @@ data/*
 .env
 
 #  Claude directory
-.claude/*models/*.pkl
+.claude/*
