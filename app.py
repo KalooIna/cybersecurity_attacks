@@ -18,7 +18,10 @@ from huggingface_hub import hf_hub_download
 import joblib
 import src.upload_models as upload_models
 
-IS_STREAMLIT_CLOUD = os.environ.get("STREAMLIT_SHARING_MODE") or os.environ.get("STREAMLIT_SERVER_ADDRESS") == "0.0.0.0"
+IS_STREAMLIT_CLOUD = (
+    os.environ.get("USER") == "appuser"
+    or os.path.exists("/home/appuser")
+)
 
 
 # ============================================================
