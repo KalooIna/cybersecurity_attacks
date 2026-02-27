@@ -34,6 +34,7 @@ from src.utilities.validation import (
     validate_time_hms,
     validate_dropdown,
     validate_csv_row,
+    validate_timestamp_noncsv
 )
 
 
@@ -611,18 +612,18 @@ with tab3:
     col1, col2, col3 = st.columns(3)
     with col1:
         st.write("**Network Info**")
-        
+        col_date, col_time = st.columns(2)
         # Timestamp: Date picker + Time input (HH:MM:SS in single field)
         st.write("Timestamp *")
-        col_date, col_time = st.columns(2)
         with col_date:
-            timestamp_date = st.date_input(
-                "Date",
-                value=date(2023, 5, 30),
-                max_value=date.today(),
+            timestamp_date = st.text_input(
+                "Date (YYYY-MM-DD)",
+                value="30-05-2025",
+                max_chars=10,
                 label_visibility="collapsed",
                 key="tab3_timestamp_date"
             )
+
         with col_time:
             timestamp_time_str = st.text_input(
                 "Time (HH:MM:SS)",
@@ -631,18 +632,25 @@ with tab3:
                 label_visibility="collapsed",
                 key="tab3_timestamp_time"
             )
+        print('timestamp_date', timestamp_date)
+        print('timestamp_time_str', timestamp_time_str)
         
-        # Validate time format (HH:MM:SS)
-        is_valid_time, err_time = validate_time_hms(timestamp_time_str)
-        if not is_valid_time:
-            show_validation_error(err_time)
-            st.session_state.tab3_validation["timestamp"] = False
-        else:
-            timestamp = f"{timestamp_date} {timestamp_time_str}"
-            is_valid_ts, err_ts = validate_timestamp(timestamp)
-            st.session_state.tab3_validation["timestamp"] = is_valid_ts
-            if not is_valid_ts:
-                show_validation_error(err_ts)
+        
+        # Validate time format (HH:MM:SS) first
+        # is_valid_time, err_time = validate_time_hms(timestamp_time_str)
+        # if not is_valid_time:
+        #     show_validation_error(err_time)
+        #     st.session_state.tab3_validation["timestamp"] = False
+        # else:
+        timestamp = f"{timestamp_date} {timestamp_time_str}"
+        print('timestamp', timestamp)
+        is_valid_ts, err_ts = validate_timestamp_noncsv(timestamp)
+        print('is_valid_tsv', is_valid_ts)
+        print('err_ts', err_ts)
+
+        st.session_state.tab3_validation["timestamp"] = is_valid_ts
+        if not is_valid_ts:
+            show_validation_error(err_ts)
         
         # Source IP Address
         st.write("Source IP Address *")

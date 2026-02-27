@@ -25,11 +25,13 @@ def validate_timestamp(ts_str):
     formats = [
         "%Y-%m-%d %H:%M:%S",              # 2023-05-30 06:33:58
         "%m/%d/%Y %I:%M:%S %p",           # 5/30/2023 06:33:58 AM
+        "%Y/%m/%d %I:%M:%S %p",           # 2023/05/30 06:33:58 AM
+        "%Y/%m/%d %H:%M:%S",           # 2023/05/30 06:33:58
         "%m/%d/%Y %H:%M:%S",              # 5/30/2023 06:33:58
         "%m/%d/%Y %H:%M",              # 5/30/2023 06:33
         "%Y/%m/%d %H:%M:%S",              # 2023/05/30 06:33:58
         "%Y-%m-%d %I:%M:%S %p",          # 2023-05-02 03:33:58 PM
-        "%Y-%m-%d %I:%M:%S",             # 2023-05-02 03:33:58
+        "%Y-%m-%d %I:%M:%S",             # 2023-05-02 03:33:58 
         "%Y-%m-%d %I:%M",             # 2023-05-02 03:33
     ]
     
@@ -37,14 +39,47 @@ def validate_timestamp(ts_str):
         try:
             ts = datetime.strptime(ts_normalized, fmt)
             print('ts', ts)
-            if ts.date() > date.today():
-                return False, "Date cannot be in the future"
+            if ts.year > 3000 :
+                return False, "Maximum year is 3000"
             return True, ""
         except ValueError:
             continue
     
-    return False, "Invalid timestamp. Use formats like: YYYY-MM-DD HH:MM:SS or M/D/YYYY H:MM:SS AM/PM"
+    return False, "Invalid input or invalid timestamp. Use formats like: YYYY-MM-DD HH:MM:SS or MM/DD/YYYY H:MM:SS (time without seconds is accepted)"
 
+def validate_timestamp_noncsv(ts_str):
+    """Validate timestamp format and date constraints.
+    Accepts multiple formats for flexibility with flexible spacing.
+    Returns: (is_valid, error_message)
+    """
+    if not ts_str or str(ts_str).strip() == "":
+        return False, "Timestamp is required"
+    
+    ts_str = str(ts_str).strip()
+    
+    # Normalize multiple spaces to single space for matching
+    ts_normalized = " ".join(ts_str.split())  # Replace multiple spaces with single space
+    
+    # Try multiple timestamp formats
+    formats = [
+
+        "%d/%m/%Y %H:%M",              # 30/05/2023 06:33
+        "%d/%m/%Y %H:%M:%S",              # 30/05/2023 06:33:00
+        "%d-%m-%Y %H:%M",              # 30-05-2023 06:33
+        "%d-%m-%Y %H:%M:%S",              # 30-05-2023 06:33:00
+    ]
+    
+    for fmt in formats:
+        try:
+            ts = datetime.strptime(ts_normalized, fmt)
+            print('ts', ts)
+            if ts.year > 3000 :
+                return False, "Maximum year is 3000"
+            return True, ""
+        except ValueError:
+            continue
+    
+    return False, "Invalid timestamp. Use formats like: DD/MM/YYYY or DD-MM-YYYY with HH:MM:SS or HH:MM"
 
 def validate_ip_address(ip_str):
     """Validate IPv4 address format.
