@@ -12,6 +12,15 @@ from src.utilities.helpers import engineer_features_for_new_row, ports_engineer_
 import hashlib
 from pipeline import main as run_pipeline
 import sys
+import os
+from huggingface_hub import hf_hub_download
+import joblib
+import src.upload_models as upload_models
+
+IS_STREAMLIT_CLOUD = (
+    os.environ.get("USER") == "appuser"
+    or os.path.exists("/home/appuser")
+)
 
 # Import validation functions
 from src.utilities.validation import (
@@ -53,33 +62,48 @@ st.set_page_config(page_title="Cyber Attack Detector", page_icon="🛡️", layo
 #             return pickle.load(f)
 
 @st.cache_resource
-def load_model(model_type: str):
-    model_path = f"models/{model_type}_model.pkl"
- 
-    # First attempt: load existing model if present
+def load_model(model_type):
+    # Step 1: try loading from HuggingFace cache
+    try:
+        hf_models = download_models_from_huggingface()
+        key = f"models/{model_type}_model.pkl"
+        if key in hf_models:
+            return hf_models[key]
+    except Exception as e:
+        st.toast(
+            f"HF download failed: {e}. Loading from local files.",
+            icon="⚠️",
+        )
+
+    # Step 2: fallback to local models/ directory
     try:
         with open(f"models/{model_type}_model.pkl", "rb") as f:
             return pickle.load(f)
     except FileNotFoundError:
-        # Display error only after running pipeline to create the model
-        pass
- 
-    # If model is missing – run the pipeline to create it.
-    # Use sequential, no‑figure mode to be lighter on resources.
-    sys.argv = ["--no-figures", "--sequential"]
-    with st.spinner(f"Training '{model_type}' model. This can take a few minutes..."):
+        if IS_STREAMLIT_CLOUD:
+            st.error(f"Model {model_type} not found. Pipeline cannot run on Streamlit Cloud.")
+            st.stop()
+        # Step 3: last resort — regenerate via pipeline, then upload
+        st.toast(f"Model {model_type} not found locally. Running pipeline.", icon="🔄")
+        sys.argv = ["--no-figures", "--sequential"]
         run_pipeline()
- 
-    # Second attempt: load the freshly trained model.
-    try:
-        with open(model_path, "rb") as f:
+        upload_models.upload_model_to_huggingface()
+        with open(f"models/{model_type}_model.pkl", "rb") as f:
             return pickle.load(f)
-    except FileNotFoundError:
-        st.error(
-            f"Model file for `{model_type}` not found even after running the pipeline. "
-            "Please check that training completed successfully."
-        )
-        raise
+
+@st.cache_resource
+def download_models_from_huggingface():
+    models = {}
+    model_files = [
+        "models/extra_trees_model.pkl",
+        "models/logit_model.pkl",
+        "models/randomforrest_model.pkl",
+    ]
+
+    for f in model_files:
+        path = hf_hub_download(repo_id="uge84/cybersecurity-models", filename=f)
+        models[f] = joblib.load(path)
+    return models
 
 @st.cache_data
 def load_dataset():
@@ -382,6 +406,19 @@ with st.sidebar:
     5. Result display
     """
     )
+
+    st.markdown("---")
+    if IS_STREAMLIT_CLOUD:
+        st.info("Pipeline rerun is disabled on Streamlit Cloud.")
+    else:
+        if st.button("🔄 Rerun Pipeline"):
+            st.cache_resource.clear()
+            sys.argv = ["--no-figures", "--sequential"]
+            with st.spinner("Running pipeline..."):
+                run_pipeline()
+                upload_models.upload_model_to_huggingface()
+            st.toast("Pipeline complete. Models regenerated.", icon="✅")
+            st.rerun()
 
     st.markdown("---")
     st.caption("DSTI MSc Project — Cyber Attack Detection")

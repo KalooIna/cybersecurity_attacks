@@ -5,9 +5,10 @@
 # Data and DB directories
 data/*
 !data/.gitkeep
-
-# Saved models
-models/*
+!data/cybersecurity_attacks.csv
+!data/df.parquet
+# Saved models (stored on HuggingFace, not in git)
+models/*.pkl
 !models/.gitkeep
 
 # Cache directories
