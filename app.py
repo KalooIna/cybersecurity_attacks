@@ -339,6 +339,11 @@ with st.sidebar:
         """
     This application predicts the type of cyber attack 
     (DDoS, Intrusion, or Malware) from raw network traffic data.
+    
+    **Models:**
+    - Extra Trees Classifier — Methodology 1
+    - Logistic Regression — Methodology 2
+    - Random Forest — Methodology 2
     """
     )
     model_options = st.selectbox(
@@ -777,7 +782,7 @@ with tab3:
         packet_length = st.slider(
             "Packet Length",
             min_value=0,
-            max_value=2000,
+            max_value=1500,
             value=503,
             step=1,
             label_visibility="collapsed",
