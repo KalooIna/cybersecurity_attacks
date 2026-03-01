@@ -33,6 +33,10 @@ def validate_timestamp(ts_str):
         "%Y-%m-%d %I:%M:%S %p",          # 2023-05-02 03:33:58 PM
         "%Y-%m-%d %I:%M:%S",             # 2023-05-02 03:33:58 
         "%Y-%m-%d %I:%M",             # 2023-05-02 03:33
+        "%d/%m/%Y %H:%M:%S",              # 30/05/2023 06:33:58
+        "%d/%m/%Y %H:%M",                 # 30/05/2023 06:33
+        "%d-%m-%Y %H:%M:%S",              # 30-05-2023 06:33:58
+        "%d-%m-%Y %H:%M",                 # 30-05-2023 06:33
     ]
     
     for fmt in formats:
@@ -45,7 +49,7 @@ def validate_timestamp(ts_str):
         except ValueError:
             continue
     
-    return False, "Invalid input or invalid timestamp. Use formats like: YYYY-MM-DD HH:MM:SS or MM/DD/YYYY H:MM:SS (time without seconds is accepted)"
+    return False, "Invalid input or invalid timestamp. Use formats like: YYYY-MM-DD HH:MM:SS, MM/DD/YYYY H:MM:SS, or DD-MM-YYYY HH:MM:SS"
 
 def validate_timestamp_noncsv(ts_str):
     """Validate timestamp format and date constraints.
