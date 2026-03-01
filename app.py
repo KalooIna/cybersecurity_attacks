@@ -637,8 +637,8 @@ with tab3:
                 label_visibility="collapsed",
                 key="tab3_timestamp_time"
             )
-        print('timestamp_date', timestamp_date)
-        print('timestamp_time_str', timestamp_time_str)
+        #print('timestamp_date', timestamp_date)
+        #print('timestamp_time_str', timestamp_time_str)
         
         
         # Validate time format (HH:MM:SS) first
@@ -648,10 +648,10 @@ with tab3:
         #     st.session_state.tab3_validation["timestamp"] = False
         # else:
         timestamp = f"{timestamp_date} {timestamp_time_str}"
-        print('timestamp', timestamp)
+        #print('timestamp', timestamp)
         is_valid_ts, err_ts = validate_timestamp_noncsv(timestamp)
-        print('is_valid_tsv', is_valid_ts)
-        print('err_ts', err_ts)
+        #print('is_valid_tsv', is_valid_ts)
+        #print('err_ts', err_ts)
 
         st.session_state.tab3_validation["timestamp"] = is_valid_ts
         if not is_valid_ts:
