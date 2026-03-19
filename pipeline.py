@@ -18,14 +18,12 @@ import pickle
 import sys
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 from pathlib import Path
-
 import pandas as pd
-
 import src.utilities.config as config
 from src.utilities.config import load_data
 from src.utilities.diagrams import paracat_diag, sankey_diag
-from src.eda_pipeline import run_eda
-from src.modelling import modelling, ports_modelling
+from src.EDA_pipeline import EDA
+from src.modeling_pipeline import modeling, ports_modeling
 from src.utilities.statistical_analysis import run_chi_square_test, run_mcc_analysis
 from src.utilities.visualization import (
     plot_geo_attack_types,
@@ -185,7 +183,7 @@ def _run_pipeline(show_figures, model_only, sequential, profile, mon):
 
         # EDA pipeline (sequential — mutates df)
         mon.stage = "EDA"
-        df, crosstabs_x_AttackType = run_eda(df)
+        df, crosstabs_x_AttackType = EDA(df)
 
         # --- Stage 1: visualizations, diagrams, statistics --------------------
         workers = [
@@ -220,7 +218,7 @@ def _run_pipeline(show_figures, model_only, sequential, profile, mon):
                         print(f"  [{name}] failed: {exc}")
 
         # Drop EDA-only "max n d" columns created by build_daily_aggregates()
-        # for the Paracat diagram.  Not needed for modelling.
+        # for the Paracat diagram.  Not needed for modeling.
         mon.stage = "trim columns"
         agg_cols = [c for c in df.columns if " max n d" in c]
         if agg_cols:
@@ -239,7 +237,7 @@ def _run_pipeline(show_figures, model_only, sequential, profile, mon):
         with open(cache_ct, "wb") as f:
             pickle.dump(crosstabs_x_AttackType, f)
 
-    # Modelling (sequential — needs full df, returns modified df)
+    # modeling (sequential — needs full df, returns modified df)
     features_mask = [
         True,   # "Source Port & Destination Port"
         False,  # "Source IP latitude/longitude combination"
@@ -257,7 +255,7 @@ def _run_pipeline(show_figures, model_only, sequential, profile, mon):
     if model_only:
         config.SHOW_FIGURES = True
 
-    modelling_kwargs = dict(
+    modeling_kwargs = dict(
         testp=0.1,
         features_mask=features_mask,
         threshold_floor=threshold_floor,
@@ -269,22 +267,22 @@ def _run_pipeline(show_figures, model_only, sequential, profile, mon):
 
     # --- Logistic Regression ---
     mon.stage = "logistic reg."
-    y_pred_logit, df = modelling(
+    y_pred_logit, df = modeling(
         df,
         crosstabs_x_AttackType,
         model_type="logit",
-        **modelling_kwargs,
+        **modeling_kwargs,
     )
     gc.collect()
 
     # --- Random Forest ---
-    # modelling() clears crosstabs internally, so pass a fresh copy
+    # modeling() clears crosstabs internally, so pass a fresh copy
     mon.stage = "random forest"
-    y_pred_rf, df = modelling(
+    y_pred_rf, df = modeling(
         df,
         copy.deepcopy(crosstabs_x_AttackType),
         model_type="randomforrest",
-        **modelling_kwargs,
+        **modeling_kwargs,
     )
     gc.collect()
 
@@ -328,7 +326,7 @@ def _run_ports_pipeline(mon):
     df_original, _ = load_data()
 
     mon.stage = "extra trees"
-    y_pred_et, df = ports_modelling(df_original)
+    y_pred_et, df = ports_modeling(df_original)
 
     # mon.stage = "post-model"
 
